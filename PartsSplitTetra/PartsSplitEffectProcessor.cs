@@ -183,6 +183,8 @@ namespace PartsSplitTetra
         {
             using var source = ToMat(input, bounds, dc);
 
+            if (source is null) return [];
+
             var channels = source.Split();
             channels[0].Dispose();
             channels[1].Dispose();
@@ -241,10 +243,12 @@ namespace PartsSplitTetra
             return result;
         }
 
-        private static Mat ToMat(ID2D1Image image, RawRectF bounds, ID2D1DeviceContext dc)
+        private static Mat? ToMat(ID2D1Image image, RawRectF bounds, ID2D1DeviceContext dc)
         {
             var width = (int)(bounds.Right - bounds.Left);
             var height = (int)(bounds.Bottom - bounds.Top);
+
+            if (width == 0 || height == 0) return null;
 
             using var targetBitmap = CreateBitmap(width, height, BitmapOptions.Target, dc);
 
