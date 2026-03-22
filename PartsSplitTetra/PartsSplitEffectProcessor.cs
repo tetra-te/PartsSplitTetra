@@ -91,8 +91,7 @@ namespace PartsSplitTetra
                     var partVideoEffects = new List<IVideoEffect>();
                     foreach (var effect in videoEffects)
                     {
-                        // ランダム系エフェクトを使ったときパーツごとに異なる挙動をさせるためにJson.GetCloneを使う
-                        partVideoEffects.Add(Json.GetClone(effect));
+                        partVideoEffects.Add(effect);
                     }
 
                     var chain = new VideoEffectChain(devices);
