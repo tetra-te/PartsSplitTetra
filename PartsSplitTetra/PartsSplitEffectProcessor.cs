@@ -25,12 +25,9 @@ namespace PartsSplitTetra
 
         DisposeCollector disposer = new();
 
-        AffineTransform2D transform2D;
-
         ID2D1CommandList? commandList;
 
         bool isFirst = true;
-        float x, y;
         int oldPartsCount;
         string oldSerializedEffects = string.Empty;
 
@@ -38,18 +35,12 @@ namespace PartsSplitTetra
 
         List<VideoEffectChain> chains = new();
 
-        public ID2D1Image Output { get; }
+        public ID2D1Image Output => commandList ?? throw new Exception("CommandList is null");
 
         public PartsSplitEffectProcessor(IGraphicsDevicesAndContext devices, PartsSplitEffect item)
         {
             this.devices = devices;
             this.item = item;
-
-            transform2D = new AffineTransform2D(devices.DeviceContext);
-            disposer.Collect(transform2D);
-
-            Output = transform2D.Output;
-            disposer.Collect(Output);
         }
 
         public DrawDescription Update(EffectDescription effectDescription)
@@ -125,12 +116,14 @@ namespace PartsSplitTetra
 
             var chainOutputs = new List<ID2D1Image>();
 
+            var positionGap = new Vector2(bounds.Left, bounds.Top);
+
             for (int i = 0; i < partsCount; i++)
             {
                 var bitmap = parts[i].Bitmap;
                 oldBitmaps.Add(bitmap);
 
-                var position = parts[i].Position;
+                var position = parts[i].Position + positionGap;
 
                 var chain = chains[i];
 
@@ -160,17 +153,6 @@ namespace PartsSplitTetra
             dc.Target = null;
             commandList.Close();
 
-            transform2D.SetInput(0, commandList, true);
-
-            var x = bounds.Left;
-            var y = bounds.Top;
-
-            if (isFirst || this.x != x || this.y != y)
-            {
-                transform2D.TransformMatrix = Matrix3x2.CreateTranslation(x, y);
-                this.x = x;
-                this.y = y;
-            }
             
             isFirst = false;
             oldPartsCount = partsCount;
@@ -305,7 +287,6 @@ namespace PartsSplitTetra
 
         public void ClearInput()
         {
-            transform2D.SetInput(0, null, true);
         }
 
         public void Dispose()
